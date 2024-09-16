@@ -1,2 +1,3 @@
-# wordsNumbers
-Converts words to a numerical format, and vice versa.
+# experiments
+
+Open source playground for me to mess around in with Python.
