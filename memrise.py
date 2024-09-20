@@ -1,13 +1,15 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time, base64, json
+from termcolor import colored
 
-def logIn(driver, username=None, password=None):
-
+def logIn(driver: webdriver.Firefox, username: str = str, password: str = str, timeout: int = 10) -> None:
     originalWindow = driver.current_window_handle
-    time.sleep(5)
-    elem = driver.find_element(By.CLASS_NAME, "L5Fo6c-bF1uUb")
+    # elem = driver.find_element(By.CLASS_NAME, "L5Fo6c-bF1uUb")
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.CLASS_NAME, "L5Fo6c-bF1uUb")))
     elem.click()
 
     for window_handle in driver.window_handles:
@@ -15,42 +17,60 @@ def logIn(driver, username=None, password=None):
             driver.switch_to.window(window_handle)
             break
 
-    time.sleep(3)
-    elem = driver.find_element(By.ID, "identifierId")
+    # elem = driver.find_element(By.ID, "identifierId")
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.ID, "identifierId")))
     elem.send_keys(username)
     
     elem = driver.find_element(By.XPATH, "/html/body/div[1]/div[1]/div[2]/c-wiz/div/div[3]/div/div[1]/div/div/button")
     elem.click()
 
-    time.sleep(3)
-    elem = driver.find_element(By.ID, "i0116")
+    # elem = driver.find_element(By.ID, "i0116")
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.ID, "i0116")))
     elem.send_keys(username)
 
     elem = driver.find_element(By.ID, "idSIButton9")
     elem.click()
 
-    time.sleep(3)
-    elem = driver.find_element(By.ID, "i0118")
+    # elem = driver.find_element(By.ID, "i0118")
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.ID, "i0118")))
     elem.send_keys(password)
 
     elem = driver.find_element(By.ID, "idSIButton9")
     elem.click()
 
-    time.sleep(3)
-    elem = driver.find_element(By.ID, "idSIButton9")
+    # elem = driver.find_element(By.ID, "idSIButton9")
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.ID, "idSIButton9")))
     elem.click()
 
     driver.switch_to.window(originalWindow)
-    time.sleep(10)
+    return("Success")
 
-with open("DoNotTrackFiles.json", "r") as file:
-    notice, usernameB64, passwordB64 = json.loads(file.read())
-username = base64.b64decode(usernameB64['username-base64'])
-password = base64.b64decode(passwordB64['password-base64'])
-username = username.decode(encoding="utf-8")
-password = password.decode(encoding="utf-8")
+def navigateToLesson(driver: webdriver.Firefox, timeout: int = 10):
+    while "Groups - Memrise" != driver.title:
+        pass
+    driver.refresh()
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div[3]/div/div[2]/div[2]/div/div[2]/div/div[2]/div/div/div/div/div/div[2]/div[1]/a")))
+    elem.click()
+
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div[4]/div/div/div[1]/div[2]/a[4]")))
+    elem.click()
+    return("Success")
+
+def _authenticationInfo() -> tuple[str, str]:
+    with open("DoNotTrackFiles.json", "r") as file:
+        notice, usernameB64, passwordB64 = json.loads(file.read())
+    username = base64.b64decode(usernameB64['username-base64'])
+    password = base64.b64decode(passwordB64['password-base64'])
+    username = username.decode(encoding="utf-8")
+    password = password.decode(encoding="utf-8")
+    return(username, password)
+
 driver = webdriver.Firefox()
-driver.get("https://app.memrise.com/signin")
-assert "Log in to your account" in driver.title
-logIn(driver, username=username, password=password)
-driver.close()
+driver.get("https://community-courses.memrise.com/signin?next=/groups/")
+username, password = _authenticationInfo()
+logIn(driver, username=username, password=password, timeout=60)
+print(colored("SUCCESS: Logged in successfully.", "green"))
+navigateToLesson(driver, timeout=60)
+print(colored("SUCCESS: Opened lesson.", "green"))
+driver.quit()
+print(colored("INFO: Driver closed.", "blue"))
