@@ -54,7 +54,17 @@ def navigateToLesson(driver: webdriver.Firefox, timeout: int = 10):
 
     elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div[4]/div/div/div[1]/div[2]/a[4]")))
     elem.click()
+
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div[4]/div/div/div[1]/div[4]/a")))
+    elem.click()
+
     return("Success")
+
+def answerQuestion(driver: webdriver.Firefox, timeout: int = 10):
+    elem = WebDriverWait(driver, timeout).until(EC.visibility_of_element_located((By.XPATH, "/html/body/div[2]/div[2]/div/div/div/div/div/div[5]/button/div")))
+    print(colored(elem.text, "red"))
+    elem.click()
+    return(True)
 
 def _authenticationInfo() -> tuple[str, str]:
     with open("DoNotTrackFiles.json", "r") as file:
@@ -72,5 +82,18 @@ logIn(driver, username=username, password=password, timeout=60)
 print(colored("SUCCESS: Logged in successfully.", "green"))
 navigateToLesson(driver, timeout=60)
 print(colored("SUCCESS: Opened lesson.", "green"))
+
+lessonOngoing = True
+increment = 0
+while lessonOngoing:
+    lessonOngoing = answerQuestion(driver, timeout=60)
+    increment = increment + 1
+    if increment % 20 == 0:
+        print(increment)
+
+time.sleep(120)
 driver.quit()
 print(colored("INFO: Driver closed.", "blue"))
+
+"/html/body/div[2]/div[2]/div/div/div/div/div/div[4]/div/div[2]/div/div[2]/div[4]/button/div[2]/span"
+"/html/body/div[2]/div[2]/div/div/div/div/div/div[4]/div/div[2]/div/div[2]/div[2]/button/div[2]/span"
